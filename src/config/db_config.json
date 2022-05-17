@@ -2,7 +2,7 @@
 {
   "username": "admin",
   "password": "Novoideas2022",
-  "database": "turnador",
+  "database": "Turnador",
   "dir": "./models",
   "port": 3306,
   "compile": "js",
