@@ -4,6 +4,7 @@ const { Sequelize } = require('sequelize');
 'use-strict';
 
 const config = require('../config/db_config.json');
+console.log(config)
 const sequelize = new Sequelize(
 
   config.database,
