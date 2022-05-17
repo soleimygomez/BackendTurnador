@@ -1,0 +1,15 @@
+
+{
+  "username": "root",
+  "password": "",
+  "database": "turnador",
+  "dir": "./models",
+  "port": 3306,
+  "compile": "js",
+  "logging": false,
+  "space": 2,
+  "reverse": false,
+  "dialectBd":"mysql",
+  "max":5,
+  "min":1
+}
