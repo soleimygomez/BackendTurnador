@@ -5,7 +5,7 @@ const RoutesApi = require("./src/routes/index")
 const fs = require('fs'); 
 var https = require('https');
 var pem = require('pem') ; 
-app.set('port',  process.env.PORT ||  4003);
+app.set('port',  process.env.PORT ||  5000);
 //app.use(express.static(__dirname + '../files'));
 app.use(express.json());
 app.use(morgan('dev'));
@@ -20,18 +20,10 @@ app.all('*', function (req, res, next) {
     next();
 });
  
-// pem.createCertificate({ days: 1, selfSigned: true }, function (keys) {
-   
-//     https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app)
-//     app.get('/', function (req, res) {
-//       res.send('o hai!')
-//     })
-   
-// })
 RoutesApi(app);
 //Server
 app.listen(app.get('port'), () => {
-    console.log('Server in port: 4003');
+    console.log('Server in port: 5000');
 });
 
 
