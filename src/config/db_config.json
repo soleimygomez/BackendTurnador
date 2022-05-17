@@ -2,7 +2,6 @@
 {
   "username": "admin",
   "password": "Novoideas2022",
-  "host": "database-turnador.c7ceqqbgrlpj.us-east-1.rds.amazonaws.com",
   "database": "Turnador",
   "dir": "./models",
   "port": 3306,
