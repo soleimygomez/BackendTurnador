@@ -22,14 +22,6 @@ const general_services = require('../services/general.js');
 let flags=false;
 let messageWhatssap=[];
 let codQR;
-// const createQr=async(req,res,next)=>{
-//   try {flags=true;
-     
-//     (fs.existsSync(SESSION_FILE_PATH && flags===true)) ? withSession() : withOutSession();
-//     next();
-//     console.log(withOutSession)
-//   } catch (e) { res.status(500).json('No es posible obtener la información en este momento.'); }
-// };
 
 const listenMessage = () => client.on('message', async msg => {
   const { from, body, hasMedia } = msg;
@@ -45,63 +37,39 @@ const listenMessage = () => client.on('message', async msg => {
   message = body.toLowerCase();
   messageWhatssap=[];
   let objectMessage={from:from,body:body,hasMedia:hasMedia};
-  //console.log("Mensajee",objectMessage)
-  //let hoy = new Date(); 
+  
   let hoy = moment();
   let manana = moment().add(0, 'days');
   console.log(messageWhatssap);
-  // console.log("hoy",manana)
-  //validacion de que el cliente ya ha enviado el mensaje 
-  let search=await dbSequelize.message.findOne({where:{clientNumber:objectMessage.from}})  
- // if(messageWhatssap.length>0){
-     //messageWhatssap.forEach(async(element)=>{
+  let search=await dbSequelize.message.findOne({where:{clientNumber:objectMessage.from},order:[['createdAt','DESC']]});  
+      
       if(search){
         let resta= manana.diff(search.createdAt)
-      //  console.log(manana.diff(search.createdAt, 'hours'), ' horas de diferencia')
-        if(resta<=18){
-          //console.log("El Cliente Ya ha enviado un Mensaje menos de 18 horas ")
+        if(resta<=1800000){
         }
         else{ messageWhatssap.push(objectMessage); }
       }
       else{ messageWhatssap.push(objectMessage) }
       
-    //})
-  // }
-  // else{  
-  //        if(search){
-  //         let resta= manana.diff(search.createdAt)
-  //        // console.log(resta)
-  //           if(resta<=18 ){
-  //             //console.log("El Cliente Ya ha enviado un Mensaje menos de 18 horas ")
-  //           }
-  //           else{  messageWhatssap.push(objectMessage) ; }
-  //       }
-  //       else{ messageWhatssap.push(objectMessage);  }
-         
-  //     } 
-  const number = cleanNumber(from)
-   deliverMessages(messageWhatssap);
+  
+  deliverMessages(messageWhatssap); 
+  const number = cleanNumber(from) 
    
 });
 
 const deliverMessages=async(messageWhatssap)=>{
-//   console.log("deliverMessages");
-       
+ 
       var hoy = new Date();
       dia = hoy.getDate();
       mes = (hoy.getMonth()+1);
       anio= hoy.getFullYear();
       let fecha_actual = String(anio+"-"+((mes>9 ? '' : '0') + mes)+"-"+((dia>9 ? '' : '0') + dia)); 
       let Users= await dbSequelize.user.findAll({ where:{Role_idRole:2},order: [['count', 'ASC']]});
-      // console.log("//****** Tamaño de los Usuarios",Users.length);
-      // console.log("//*****   Empezando a recorrer los mensajes")
-      for(let i=0;i<messageWhatssap.length;i++){ 
-        // for(let j=0;j<Users.length;j++){
+        for(let i=0;i<messageWhatssap.length;i++){  
            
            let messageSearch=await dbSequelize.message.findOne({where:{clientNumber:messageWhatssap[i].from}})
             
-           if(!messageSearch ){  
-            //  console.log("aquie fue")
+           if(!messageSearch ){   
             let userUpdate=await dbSequelize.user.findOne({ where:{Role_idRole:2,idUser:Users[0].idUser} });
             let userNext= Users[1]!=undefined?Users[1]:Users[0];
             let Count=userUpdate.count;
@@ -118,9 +86,8 @@ const deliverMessages=async(messageWhatssap)=>{
                 }
             // }
              console.log("salio una vez")
-           }else{//console.log("aquie fue 126")
-             
-          //console.log(fecha_actual)
+           }else{
+              
           let flags=true;
           
             messageSearch=await dbSequelize.message.findAll({where:{clientNumber:messageWhatssap[i].from}})
@@ -144,15 +111,13 @@ const deliverMessages=async(messageWhatssap)=>{
                      let dataSend={body:messageWhatssap[i].hasMedia?"El cliente ha enviado Contenido multimedia":messageWhatssap[i].body,clientNumber:messageWhatssap[i].from,user:userUpdate.idUser,status:0}
                       await dbSequelize.message.create(dataSend)
                     }
-                // }
-                 //console.log("salio una vez")
+               
               
             }else{
-              //console.log("ya existe en la Bd")
+               
             }
              
-          }
-        //} 
+          } 
          
       } 
       messageWhatssap=[]
@@ -466,7 +431,7 @@ const Downoload=async(req,res,next)=>{
     let month = date.getMonth();
     let year = date.getFullYear();
 
-    let url = "../files/ReporteMensajes" + "_" + day + "-" + month + "-" + year + ".xlsx";
+    let url = "../../files/ReporteMensajes" + "_" + day + "-" + month + "-" + year + ".xlsx";
 
     let workbookAbout = Excel.writeFile(workbook, url , { bookType: 'xlsx', type: 'binary' });
     
