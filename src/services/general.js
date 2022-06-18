@@ -11,7 +11,7 @@ const Op = dbSequelize.Sequelize.Op;
 const createUser = async (req) => {
    
   const{email, password,name,phonenumber,role_idrole }=req.headers
-  console.log(email, password,name,phonenumber,role_idrole)
+  //console.log(email, password,name,phonenumber,role_idrole)
   try {
     let userRow
     if(parseInt(role_idrole)===1){
@@ -130,8 +130,8 @@ const userInformation=async(req)=>{
       return { status: 200, data: messageStadisc};
     }
     if(rol==="2"){
-      const MessageNotLeido= await dbSequelize.message.findAll({ where:{status:0,user:iduser},include:[{model:dbSequelize.user, required:true}] });
-      const Llegados=await dbSequelize.message.findAll({ where:{user:iduser} });
+      const MessageNotLeido= await dbSequelize.message.findAll({ where:{status:0,idUser:iduser},include:[{model:dbSequelize.user, required:true}] });
+      const Llegados=await dbSequelize.message.findAll({ where:{idUser:iduser} });
       //let User=await dbSequelize.user.findAll({ where:{Role_idRole:2}});
       let messageStadisc=({noLeidos:MessageNotLeido.length,llegados:Llegados.length});
       return { status: 200, data: messageStadisc};
@@ -211,7 +211,7 @@ const AllMessage=async()=>{
 const AllMessageUser=async(req)=>{
   try {
     const {iduser}=req.headers;
-    const Message= await dbSequelize.message.findAll({where:{user:iduser}, include: [ { model: dbSequelize.user,required:true },{ model: dbSequelize.comment } ],order: [['idMessage', 'DESC']]  });
+    const Message= await dbSequelize.message.findAll({where:{idUser:iduser}, include: [ { model: dbSequelize.user,required:true },{ model: dbSequelize.comment } ],order: [['idMessage', 'DESC']]  });
     return { status: 200, data: Message };
   } catch (e) {
     console.log(e);

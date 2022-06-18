@@ -45,19 +45,19 @@ db.rol = require('../../models/rol.js')(sequelize, Sequelize);
 db.user = require('../../models/user.js')(sequelize, Sequelize);
 db.comment=require('../../models/comment.js')(sequelize, Sequelize);
 db.message=require('../../models/message.js')(sequelize, Sequelize);
+db.messageListen=require('../../models/messageListen.js')(sequelize,Sequelize);
 
 
 db.auth.belongsTo(db.user, { foreignKey: 'User_idUser' });
 db.user.hasOne(db.auth, { foreignKey: 'User_idUser' });
 
 db.message.belongsTo(db.comment, { foreignKey: 'idComment' });
-db.comment.hasOne(db.message, { foreignKey: 'idComment' }); 
+db.comment.hasOne(db.message, { foreignKey: 'idComment' });
 
 db.rol.hasOne(db.user, { foreignKey: 'Role_idRole' });
 db.user.belongsTo(db.rol, { foreignKey: 'Role_idRole' });
-
-db.message.belongsTo(db.user, { foreignKey: 'user' });
-db.user.hasOne(db.message, { foreignKey: 'user' });
+db.message.belongsTo(db.user, { foreignKey: 'idUser' });
+db.user.hasOne(db.message, { foreignKey: 'idUser' });
 
 module.exports = db;
 
