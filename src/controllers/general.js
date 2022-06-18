@@ -22,113 +22,9 @@ const general_services = require('../services/general.js');
 let flags=false;
 let messageWhatssap=[];
 let codQR;
-
-const listenMessage = () => client.on('message', async msg => {
-  const { from, body, hasMedia } = msg;
-   
-  if (!isValidNumber(from)) {
-      return
-  }
-
-  // Este bug lo reporto Lucas Aldeco Brescia para evitar que se publiquen estados
-  if (from === 'status@broadcast') {
-      return
-  }
-  message = body.toLowerCase();
-  messageWhatssap=[];
-  let objectMessage={from:from,body:body,hasMedia:hasMedia};
-  
-  let hoy = moment();
-  let manana = moment().add(0, 'days');
-  console.log(messageWhatssap);
-  let search=await dbSequelize.message.findOne({where:{clientNumber:objectMessage.from},order:[['createdAt','DESC']]});  
-      
-      if(search){
-        let resta= manana.diff(search.createdAt)
-        if(resta<=1800000){
-        }
-        else{ messageWhatssap.push(objectMessage); }
-      }
-      else{ messageWhatssap.push(objectMessage) }
-      
-  
-  deliverMessages(messageWhatssap); 
-  const number = cleanNumber(from) 
-   
-});
-
-const deliverMessages=async(messageWhatssap)=>{
  
-      var hoy = new Date();
-      dia = hoy.getDate();
-      mes = (hoy.getMonth()+1);
-      anio= hoy.getFullYear();
-      let fecha_actual = String(anio+"-"+((mes>9 ? '' : '0') + mes)+"-"+((dia>9 ? '' : '0') + dia)); 
-      let Users= await dbSequelize.user.findAll({ where:{Role_idRole:2},order: [['count', 'ASC']]});
-        for(let i=0;i<messageWhatssap.length;i++){  
-           
-           let messageSearch=await dbSequelize.message.findOne({where:{clientNumber:messageWhatssap[i].from}})
-            
-           if(!messageSearch ){   
-            let userUpdate=await dbSequelize.user.findOne({ where:{Role_idRole:2,idUser:Users[0].idUser} });
-            let userNext= Users[1]!=undefined?Users[1]:Users[0];
-            let Count=userUpdate.count;
-            let CountNext=userNext.count;
-               if(Count>CountNext){ 
-                let userAsign=await dbSequelize.user.update({  count: CountNext+1 }, {  where: { idUser: userNext.idUser, }  });
-                let dataSend={body:messageWhatssap[i].hasMedia?"El cliente ha enviado Contenido multimedia":messageWhatssap[i].body,clientNumber:messageWhatssap[i].from,user:userNext.idUser,status:0}
-                await dbSequelize.message.create(dataSend)
-               }
-               else if(Count<=CountNext){ 
-                 let userAsign=await dbSequelize.user.update({  count: Count+1 }, {  where: { idUser:userUpdate.idUser, }  }); 
-                 let dataSend={body:messageWhatssap[i].hasMedia?"El cliente ha enviado Contenido multimedia":messageWhatssap[i].body,clientNumber:messageWhatssap[i].from,user:userUpdate.idUser,status:0}
-                 await dbSequelize.message.create(dataSend)
-                }
-            // }
-             console.log("salio una vez")
-           }else{
-              
-          let flags=true;
-          
-            messageSearch=await dbSequelize.message.findAll({where:{clientNumber:messageWhatssap[i].from}})
-            messageSearch.forEach(element=>{
-               if(element.dataValues.updatedAt==fecha_actual){
-                flags=false;
-              }
-            })
-              if(flags){ 
-                let userUpdate=await dbSequelize.user.findOne({ where:{Role_idRole:2,idUser:Users[0].idUser} });
-                let userNext= Users[1]!=undefined?Users[1]:Users[0];
-                let Count=userUpdate.count;
-                let CountNext=userNext.count;
-                  if(Count>CountNext){ 
-                     let userAsign=await dbSequelize.user.update({  count: CountNext+1 }, {  where: { idUser: userNext.idUser, }  });
-                    let dataSend={body:messageWhatssap[i].hasMedia?"El cliente ha enviado Contenido multimedia":messageWhatssap[i].body,clientNumber:messageWhatssap[i].from,user:userNext.idUser,status:0}
-                    await dbSequelize.message.create(dataSend)
-                   }
-                   else if(Count<=CountNext){ 
-                     let userAsign=await dbSequelize.user.update({  count: Count+1 }, {  where: { idUser:userUpdate.idUser, }  }); 
-                     let dataSend={body:messageWhatssap[i].hasMedia?"El cliente ha enviado Contenido multimedia":messageWhatssap[i].body,clientNumber:messageWhatssap[i].from,user:userUpdate.idUser,status:0}
-                      await dbSequelize.message.create(dataSend)
-                    }
-               
-              
-            }else{
-               
-            }
-             
-          } 
-         
-      } 
-      messageWhatssap=[]
 
-};
-
-/**
- * Revisamos si tenemos credenciales guardadas para inciar sessio
- * este paso evita volver a escanear el QRCODE
- */
- const withSession = () => {
+const withSession = () => {
   console.log(`Validando session con Whatsapp...`)
   sessionData = require(SESSION_FILE_PATH);
   client = new Client(createClient(sessionData, true));
@@ -160,9 +56,76 @@ const deliverMessages=async(messageWhatssap)=>{
   })) 
   client.on('ready', (a) => {
       connectionReady()
-      listenMessage()
+     // listenMessage()
        
   });
+
+
+ client.on('message', async msg => {
+    const { from, body, hasMedia } = msg;
+    console.log(from,body,hasMedia);
+    if (from === 'status@broadcast' ) {
+      return
+    }
+    await dbSequelize.messageListen.create({from:from,body:body,media:hasMedia});
+
+    let objectMessage ={from:from,body:body,hasMedia:hasMedia};
+    message = body.toLowerCase();
+    messageWhatssap = [];
+    
+   let manana= moment().add(0,'days');
+    let search = await dbSequelize.message.findOne({ where: { clientNumber: objectMessage.from } });
+   
+    if (search && objectMessage.body!="") {
+      let resta =manana.diff(search.createdAt);
+  
+      if(resta<=180000000){
+	}
+       
+    }
+    else { 
+      if(objectMessage.body!="" || objectMessage.hasMedia){
+        var hoy = new Date();
+        dia = hoy.getDate();
+        mes = (hoy.getMonth() + 1);
+        anio = hoy.getFullYear();
+        let fecha_actual = String(anio + "-" + ((mes > 9 ? '' : '0') + mes) + "-" + ((dia > 9 ? '' : '0') + dia));
+        let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
+         
+          let messageSearch = await dbSequelize.message.findOne({ where: { clientNumber:objectMessage.from } })
+               
+          if (!messageSearch) {
+           
+              let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
+              let dataSend = { body: objectMessage.hasMedia?"El Cliente a enviado contenido multimedia":objectMessage.body, clientNumber: objectMessage.from, idUser: Users[0].idUser, status: 0 }
+              await dbSequelize.message.create(dataSend)
+            
+            console.log("salio una vez")
+          } else {
+             let flags=true;
+	
+              messageSearch = await dbSequelize.message.findAll({ where: { clientNumber:objectMessage.from } })
+              messageSearch.forEach(element=>{
+		if(element.dataValues.updatedAt==fecha_actual){flags=false;}
+		})
+	
+	     if(flags){
+              let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
+              let dataSend = { body: objectMessage.hasMedia?"El Cliente a enviado contenido multimedia":objectMessage.body, clientNumber: objectMessage.from, idUser: Users[0].idUser, status: 0}
+              await dbSequelize.message.create(dataSend)
+		
+		}
+          }
+      
+        }
+      }
+   objectMessage=[];
+
+  
+  });
+  
+
+
   if(codQR){res.status(200).json(codQR)}
   client.on('auth_failure', (e) => {
       // console.log(e)
@@ -232,7 +195,7 @@ const makeLogin = async (req, res, next) => {
     return;
   }
   const { email, password } = req.body;
-  console.log(email,password)
+  //console.log(email,password)
   var ip = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||
     req.connection.remoteAddress ||
     req.socket.remoteAddress ||
@@ -241,9 +204,9 @@ const makeLogin = async (req, res, next) => {
     try {
       const result = await general_services.login(email, password);
       if (result.status === 200) {
-          console.log(result)
+          //console.log(result)
           res.status(result.status).json(result.data);
-      } else { console.log(result)
+      } else { //console.log(result)
         res.status(result.status).json({ message: result.message });
       } next();
     } catch (e) {
@@ -252,22 +215,6 @@ const makeLogin = async (req, res, next) => {
     };
   } else {
     res.status(400).json({ message: "Ingrese correctamente los datos, por favor." });
-  }
-};
-const createComment=async(req,res,next)=>{
-  try {
-    const result = await general_services.createComment(req);
-    if (result.status === 200) {
-      res.status(result.status).json(result.message);
-    } else {
-      res.status(result.status).json(result.message);
-    }
-    next();
-  } catch (e) {
-    console.log('Error', e);
-    res.status(500).json({
-      message: 'Por favor, valida los datos ingresados e intenta nuevamente.',
-    });
   }
 };
 const AllComment=async(req,res,next)=>{
@@ -341,7 +288,7 @@ const AllMessageUser=async(req,res,next)=>{
     let dataSend=[]
     const result = await general_services.AllMessageUser(req);
     if (result.status === 200) {
-      console.log(result.data);
+      //console.log(result.data);
         result.data.forEach(element => {
          dataSend.push({idMessage:element.idMessage,body:element.body,clientNumber:element.clientNumber,status:element.status ,createdAt:element.createdAt,asesora:element.User.name,comment:element.comment,comment:element.comment?element.comment.name:"",colour:element.comment?element.comment.colour:"",phoneAsesor:element.User.phoneNumber});
         });
@@ -356,14 +303,14 @@ const AllMessageUser=async(req,res,next)=>{
 
 };
 const userInformation=async(req,res,next)=>{
-  try {   
+  try {
     const result = await general_services.userInformation(req);
     if (result.status === 200) {
       res.status(result.status).json(result.data);
     } else {
       res.status(result.status).json(result.message);
     }
-    next(); 
+    next();
   } catch (e) {
     res.status(500).json('No es posible obtener la información en este momento.');
   }
@@ -451,4 +398,4 @@ const Downoload=async(req,res,next)=>{
   }
 
 };
-module.exports = { Downoload,withOutSession,EliminarComment,EdithComment,userInformation,EdithMessageStatus,AllMessageUser, AllMessage,createComment,  AllComment,AllUser,createUser,makeLogin,EdithMessage}
+module.exports = { Downoload,withOutSession,EliminarComment,EdithComment,userInformation,EdithMessageStatus,AllMessageUser, AllMessage,createComment, AllComment,AllUser,createUser,makeLogin,EdithMessage}
