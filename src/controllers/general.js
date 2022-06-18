@@ -24,6 +24,24 @@ let messageWhatssap=[];
 let codQR;
  
 
+
+const createComment=async(req,res,next)=>{
+  try {
+    const result = await general_services.createComment(req);
+    if (result.status === 200) {
+      res.status(result.status).json(result.message);
+    } else {
+      res.status(result.status).json(result.message);
+    }
+    next();
+  } catch (e) {
+    console.log('Error', e);
+    res.status(500).json({
+      message: 'Por favor, valida los datos ingresados e intenta nuevamente.',
+    });
+  }
+};
+
 const withSession = () => {
   console.log(`Validando session con Whatsapp...`)
   sessionData = require(SESSION_FILE_PATH);
