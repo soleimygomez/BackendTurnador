@@ -5,7 +5,7 @@ const RoutesApi = require("./src/routes/index")
 const fs = require('fs'); 
 var https = require('https');
 var pem = require('pem') ; 
-app.set('port', 4001);
+app.set('port', 4002);
 //app.use(express.static(__dirname + '../files'));
 app.use(express.json());
 app.use(morgan('dev'));
@@ -23,7 +23,7 @@ app.all('*', function (req, res, next) {
 RoutesApi(app);
 //Server
 app.listen(app.get('port'), () => {
-    console.log('Server in port: 4001');
+    console.log('Server in port: 4002');
 });
 
 
