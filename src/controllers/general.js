@@ -80,12 +80,28 @@ const withSession = () => {
 
 
  client.on('message', async msg => {
-    const { from, body, hasMedia } = msg;
-    console.log(from,body,hasMedia);
+    const { from, body, hasMedia } = msg; 
     if (from === 'status@broadcast' ) {
       return
     }
-    await dbSequelize.messageListen.create({from:from,body:body,media:hasMedia});
+    const allChats = await client.getChats();
+    const lastFiftyChats = allChats.splice(0, 30);
+    
+    lastFiftyChats.forEach(async(element)=>{
+      let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
+      // console.log(element.isGroup,typeof(element.isGroup));
+      if(!element.isGroup){
+         const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
+         if(!status){
+              let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
+              let dataSend = { body: "mensaje no registrado", clientNumber: `${element.id.user}@c.us`, idUser: Users[0].idUser, status: 0 }
+              await dbSequelize.message.create(dataSend)
+         }
+        
+      }
+       
+    })
+
 
     let objectMessage ={from:from,body:body,hasMedia:hasMedia};
     message = body.toLowerCase();
