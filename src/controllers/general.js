@@ -88,9 +88,9 @@ const withSession = () => {
     const lastFiftyChats = allChats.splice(0, 30);
     
     lastFiftyChats.forEach(async(element)=>{
-      let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
-      // console.log(element.isGroup,typeof(element.isGroup));
+       // console.log(element.isGroup,typeof(element.isGroup));
       if(!element.isGroup){
+         let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
          const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
          if(!status){
               let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
