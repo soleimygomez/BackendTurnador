@@ -1,37 +1,17 @@
 const { Client, LegacySessionAuth, LocalAuth } = require('whatsapp-web.js');
 const http = require('http'); // or 'https' for https:// URLs
 const https = require('https'); // or 'https' for https:// URLs
+const puppeteer = require('puppeteer');
 const fs = require('fs');
 const qr = require('qr-image')
-
-const MULTI_DEVICE = process.env.MULTI_DEVICE || 'true';
+ 
 
 const cleanNumber = (number) => {
     number = number.replace('@c.us', '');
     number = `${number}@c.us`;
     return number
 }
-
-// const saveExternalFile = (url) => new Promise((resolve, reject) => {
-//     const ext = url.split('.').pop()
-//     const checkProtocol = url.split('/').includes('https:');
-//     const handleHttp = checkProtocol ? https : http;
-//     const name = `${Date.now()}.${ext}`;
-//     const file = fs.createWriteStream(`${__dirname}/../mediaSend/${name}`);
-//     console.log(url)
-//      handleHttp.get(url, function(response) {
-//         response.pipe(file);
-//         file.on('finish', function() {
-//             file.close();  // close() is async, call cb after close completes.
-//             resolve(name)
-//         });
-//         file.on('error', function() {
-//             console.log('errro')
-//             file.close();  // close() is async, call cb after close completes.
-//             resolve(null)
-//         });
-//     });
-// })
+ 
 
 const checkIsUrl = (path) => {
     try{
@@ -65,32 +45,22 @@ const checkEnvFile = () => {
  * @param {*} session 
  * @param {*} cb 
  */
-const createClient =  (session = {}, login = false) => {
-    console.log(`Mode: ${(MULTI_DEVICE === 'false') ? 'No Multi-device' : 'Si Multi-device'} `)
+const createClient = async (session = {}, login = false) => {
+    console.log(session)
+    //console.log(`Mode: ${(MULTI_DEVICE === 'false') ? 'No Multi-device' : 'Si Multi-device'} `)
     const objectLegacy = (login) ? {
         authStrategy: new LegacySessionAuth({
             session
         })
     } : {session};
-
-    if(MULTI_DEVICE == 'false') {
-       return {...objectLegacy,
-        restartOnAuthFail: true,
-        puppeteer: {
-            args: [
-                '--no-sandbox'
-            ],
-        }
-    }
-    }else{
-        return {
-            puppeteer: { 
-                headless: true, 
-                args: ['--no-sandbox'] 
-            }, 
-            clientId: 'client-one' 
-        }
-    }
+ 
+       return {...objectLegacy, restartOnAuthFail: true, puppeteer: {
+            args: [ '--no-sandbox'  ] ,headless: false, read_timeout: 60000
+        } }
+        // const browser = await puppeteer.launch({
+        //     headless: false,read_timeout: 60000
+        // });
+    
 }
 
 const isValidNumber = (rawNumber) => {
