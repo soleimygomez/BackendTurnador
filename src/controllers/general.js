@@ -84,26 +84,7 @@ const withSession = () => {
     if (from === 'status@broadcast' ) {
       return
     }
-    const allChats = await client.getChats();
-    const lastFiftyChats = allChats.splice(0, 30);
-    
-    lastFiftyChats.forEach(async(element)=>{
-       // console.log(element.isGroup,typeof(element.isGroup));
-      if(!element.isGroup){
-         let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
-         const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
-         if(!status){
-              let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
-              let dataSend = { body: "mensaje no registrado", clientNumber: `${element.id.user}@c.us`, idUser: Users[0].idUser, status: 0 }
-              await dbSequelize.message.create(dataSend)
-         }
-        
-      }
-       
-    })
-
-
-    let objectMessage ={from:from,body:body,hasMedia:hasMedia};
+     let objectMessage ={from:from,body:body,hasMedia:hasMedia};
     message = body.toLowerCase();
     messageWhatssap = [];
     
@@ -154,6 +135,24 @@ const withSession = () => {
         }
       }
    objectMessage=[];
+    const allChats = await client.getChats();
+    const lastFiftyChats = allChats.splice(0,10);
+    
+    lastFiftyChats.forEach(async(element)=>{
+       // console.log(element.isGroup,typeof(element.isGroup));
+      if(!element.isGroup){
+         //let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
+         const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
+         if(!status){
+              let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
+              let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
+              let dataSend = { body: "Vi esto en Facebook....", clientNumber: `${element.id.user}@c.us`, idUser: Users[0].idUser, status: 0 }
+              await dbSequelize.message.create(dataSend)
+         }
+        
+      }
+       
+    })
 
   
   });
