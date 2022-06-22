@@ -140,7 +140,7 @@ const createComment=async(req,res,next)=>{
     
     lastFiftyChats.forEach(async(element)=>{
        // console.log(element.isGroup,typeof(element.isGroup));
-      if(!element.isGroup){
+      if(element.isGroup=='false'){
          //let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
          const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
          if(!status){
