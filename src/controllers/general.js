@@ -7,7 +7,7 @@ const { Client } = require('whatsapp-web.js');
 const { validationResult } = require('express-validator');
 const { connectionReady, connectionLost } = require('./connection')
 const dbSequelize = require('../config/database_sequelize.js');
-const { generateImage, cleanNumber, checkEnvFile, createClient, isValidNumber } = require('./handle')
+const { generateImage,  createClient } = require('./handle')
 const Excel = require('xlsx');
 
 const sequelize = dbSequelize.sequelize;
@@ -42,20 +42,20 @@ const createComment=async(req,res,next)=>{
   }
 };
 
-const withSession = () => {
-  console.log(`Validando session con Whatsapp...`)
-  sessionData = require(SESSION_FILE_PATH);
-  client = new Client(createClient(sessionData, true));
+// const withSession = () => {
+//   console.log(`Validando session con Whatsapp...`)
+//   sessionData = require(SESSION_FILE_PATH);
+//   client = new Client(createClient(sessionData, true));
 
-  client.on('ready', () => {
-      connectionReady()
-      listenMessage()
-  });
+//   client.on('ready', () => {
+//       connectionReady()
+//       // listenMessage()
+//   });
 
-  client.on('auth_failure', () => connectionLost())
+//   client.on('auth_failure', () => connectionLost())
 
-  client.initialize();
-}
+//   client.initialize();
+// }
 
 /**
  * Generamos un QRCODE para iniciar sesion
@@ -68,7 +68,7 @@ const withSession = () => {
 
   client.on('qr', qr => generateImage(qr, () => {
       //console.log("el qr",qr )
-       // qrcode.generate(qr, { small: true });
+        qrcode.generate(qr, { small: true });
         res.status(200).json(qr)
       
   })) 
