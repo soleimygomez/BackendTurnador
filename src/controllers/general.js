@@ -68,7 +68,7 @@ const createComment=async(req,res,next)=>{
 
   client.on('qr', qr => generateImage(qr, () => {
       //console.log("el qr",qr )
-        qrcode.generate(qr, { small: true });
+        //qrcode.generate(qr, { small: true });
         res.status(200).json(qr)
       
   })) 
