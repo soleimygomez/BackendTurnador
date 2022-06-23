@@ -68,7 +68,7 @@ const createComment=async(req,res,next)=>{
 
   client.on('qr', qr => generateImage(qr, () => {
       //console.log("el qr",qr )
-        qrcode.generate(qr, { small: true });
+        //qrcode.generate(qr, { small: true });
         res.status(200).json(qr)
       
   })) 
@@ -140,7 +140,7 @@ const createComment=async(req,res,next)=>{
     
     lastFiftyChats.forEach(async(element)=>{
        // console.log(element.isGroup,typeof(element.isGroup));
-      if(element.isGroup=='false'){
+      if(!element.isGroup){
          //let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
          const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
          if(!status){
