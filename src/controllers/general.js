@@ -90,7 +90,7 @@ const createComment=async(req,res,next)=>{
     
    let manana= moment().add(0,'days');
     let search = await dbSequelize.message.findOne({ where: { clientNumber: objectMessage.from } });
-    let resta =manana.diff(search.createdAt);
+    let resta =manana.diff(search?search.createdAt:0);
     if (search && objectMessage.body!="" && resta>=180000000) {
       let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
       let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
