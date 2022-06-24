@@ -90,15 +90,15 @@ const createComment=async(req,res,next)=>{
     
    let manana= moment().add(0,'days');
     let search = await dbSequelize.message.findOne({ where: { clientNumber: objectMessage.from } });
-   
-    if (search && objectMessage.body!="") {
-      let resta =manana.diff(search.createdAt);
-  
-      if(resta<=180000000){
-	}
-       
+    let resta =manana.diff(search.createdAt);
+    if (search && objectMessage.body!="" && resta>=180000000) {
+      let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
+      let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
+      let dataSend = { body: objectMessage.hasMedia?"El Cliente a enviado contenido multimedia":objectMessage.body, clientNumber: objectMessage.from, idUser: Users[0].idUser, status: 0 }
+      await dbSequelize.message.create(dataSend);
     }
     else { 
+    // if(!search){ 
       if(objectMessage.body!="" || objectMessage.hasMedia){
         var hoy = new Date();
         dia = hoy.getDate();
@@ -115,25 +115,11 @@ const createComment=async(req,res,next)=>{
               let dataSend = { body: objectMessage.hasMedia?"El Cliente a enviado contenido multimedia":objectMessage.body, clientNumber: objectMessage.from, idUser: Users[0].idUser, status: 0 }
               await dbSequelize.message.create(dataSend)
             
-            console.log("salio una vez")
-          } else {
-             let flags=true;
-	
-              messageSearch = await dbSequelize.message.findAll({ where: { clientNumber:objectMessage.from } })
-              messageSearch.forEach(element=>{
-		if(element.dataValues.updatedAt==fecha_actual){flags=false;}
-		})
-	
-	     if(flags){
-              let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
-              let dataSend = { body: objectMessage.hasMedia?"El Cliente a enviado contenido multimedia":objectMessage.body, clientNumber: objectMessage.from, idUser: Users[0].idUser, status: 0}
-              await dbSequelize.message.create(dataSend)
-		
-		}
-          }
+            // console.log("salio una vez")
+          } 
       
-        }
-      }
+        } 
+    }
    objectMessage=[];
     const allChats = await client.getChats();
     const lastFiftyChats = allChats.splice(0,10);
