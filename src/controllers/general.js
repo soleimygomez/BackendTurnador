@@ -84,13 +84,14 @@ const createComment=async(req,res,next)=>{
     if (from === 'status@broadcast' ) {
       return
     }
-     let objectMessage ={from:from,body:body,hasMedia:hasMedia};
+    if(!from.includes('@g')){ 
+    let objectMessage ={from:from,body:body,hasMedia:hasMedia};
     message = body.toLowerCase();
     messageWhatssap = [];
     
    let manana= moment().add(0,'days');
     let search = await dbSequelize.message.findOne({ where: { clientNumber: objectMessage.from } });
-    let resta =manana.diff(search.createdAt);
+    let resta =manana.diff(search?search.createdAt:0);
     if (search && objectMessage.body!="" && resta>=180000000) {
       let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
       let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
@@ -126,7 +127,7 @@ const createComment=async(req,res,next)=>{
     
     lastFiftyChats.forEach(async(element)=>{
        // console.log(element.isGroup,typeof(element.isGroup));
-      if(!element.isGroup){
+      if(!element.isGroup && !from.includes('@g')){
          //let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
          const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
          if(!status){
@@ -139,7 +140,7 @@ const createComment=async(req,res,next)=>{
       }
        
     })
-
+   }
   
   });
   
