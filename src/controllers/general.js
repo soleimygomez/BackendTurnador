@@ -399,7 +399,7 @@ const Downoload=async(req,res,next)=>{
     let month = date.getMonth();
     let year = date.getFullYear();
 
-    let url = "../../files/ReporteMensajes" + "_" + day + "-" + month + "-" + year + ".xlsx";
+    let url = "./files/ReporteMensajes" + "_" + day + "-" + month + "-" + year + ".xlsx";
 
     let workbookAbout = Excel.writeFile(workbook, url , { bookType: 'xlsx', type: 'binary' });
     
