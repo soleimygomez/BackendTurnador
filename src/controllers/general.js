@@ -376,7 +376,8 @@ const Downoload=async(req,res,next)=>{
   const Message= await dbSequelize.message.findAll({where:{idMessage:array}, include: [ { model: dbSequelize.user,required:true },{ model: dbSequelize.comment } ]
   }); 
   Message.forEach(element => {
-    dataSend.push({idMessage:element.idMessage,Mensaje:element.body==""?"Contenido Multimedia":element.body,NumeroCliente:element.clientNumber,status:element.status=="1"?"leido":"No Leido" ,Fecha_Enviado:element.createdAt,asesora:element.User.name,Comentario:element.comment?element.comment.name:"No Registrado",Numero_Asesor:element.User.phoneNumber});
+    //console.log(typeof(element.createdAt),element.createdAt.toLocaleString("es-CO", { timeZone: "America/Bogota" }))
+    dataSend.push({idMessage:element.idMessage,Mensaje:element.body==""?"Contenido Multimedia":element.body,NumeroCliente:element.clientNumber,status:element.status=="1"?"leido":"No Leido" ,Fecha_Enviado:element.createdAt.toLocaleString("es-CO", { timeZone: "America/Bogota" }),asesora:element.User.name,Comentario:element.comment?element.comment.name:"No Registrado",Numero_Asesor:element.User.phoneNumber});
   });
   if(dataSend.length>0){ 
     let workbook = Excel.utils.book_new();
