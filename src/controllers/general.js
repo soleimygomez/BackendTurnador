@@ -122,6 +122,8 @@ const createComment=async(req,res,next)=>{
         } 
     // }
    objectMessage=[];
+    
+    }
     const allChats = await client.getChats();
     const lastFiftyChats = allChats.splice(0,10);
     
@@ -139,8 +141,7 @@ const createComment=async(req,res,next)=>{
         
       }
        
-    })
-   }
+   })
   }
   
   });
