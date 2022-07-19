@@ -79,7 +79,8 @@ const createComment=async(req,res,next)=>{
   });
 
 
- client.on('message', async msg => {
+ 
+  client.on('message', async msg => {
     const { from, body, hasMedia } = msg; 
     if (from === 'status@broadcast' ) {
       return
@@ -89,17 +90,21 @@ const createComment=async(req,res,next)=>{
     message = body.toLowerCase();
     messageWhatssap = [];
     
-   let manana= moment().add(0,'days');
+   let manana= moment().add(0,'days'); 
     let search = await dbSequelize.message.findOne({ where: { clientNumber: objectMessage.from } });
-    let resta =manana.diff(search?search.createdAt:0);
-    if (search && objectMessage.body!="" && resta>=180000000) {
+   
+    if (search && objectMessage.body!=""   || objectMessage.hasMedia) {
+      let resta =manana.diff(search.createdAt);   
+      let days = (resta / (1000 * 60 * 60 * 24)).toFixed(1)
+      if(days>=1)  { 
       let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
       let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
       let dataSend = { body: objectMessage.hasMedia?"El Cliente a enviado contenido multimedia":objectMessage.body, clientNumber: objectMessage.from, idUser: Users[0].idUser, status: 0 }
       await dbSequelize.message.create(dataSend);
+      }
     }
     else { 
-    // if(!search){ 
+    if(!search){ 
       if(objectMessage.body!="" || objectMessage.hasMedia){
         var hoy = new Date();
         dia = hoy.getDate();
@@ -120,10 +125,10 @@ const createComment=async(req,res,next)=>{
           } 
       
         } 
-    }
+    // }
    objectMessage=[];
     const allChats = await client.getChats();
-    const lastFiftyChats = allChats.splice(0,10);
+    const lastFiftyChats = allChats.splice(0,2);
     
     lastFiftyChats.forEach(async(element)=>{
        // console.log(element.isGroup,typeof(element.isGroup));
@@ -140,9 +145,12 @@ const createComment=async(req,res,next)=>{
       }
        
     })
-   }
+    }
+    }
+  }
   
   });
+  
   
 
 
@@ -375,7 +383,8 @@ const Downoload=async(req,res,next)=>{
   const Message= await dbSequelize.message.findAll({where:{idMessage:array}, include: [ { model: dbSequelize.user,required:true },{ model: dbSequelize.comment } ]
   }); 
   Message.forEach(element => {
-    dataSend.push({idMessage:element.idMessage,Mensaje:element.body==""?"Contenido Multimedia":element.body,NumeroCliente:element.clientNumber,status:element.status=="1"?"leido":"No Leido" ,Fecha_Enviado:element.createdAt,asesora:element.User.name,Comentario:element.comment?element.comment.name:"No Registrado",Numero_Asesor:element.User.phoneNumber});
+    //console.log(typeof(element.createdAt),element.createdAt.toLocaleString("es-CO", { timeZone: "America/Bogota" }))
+    dataSend.push({idMessage:element.idMessage,Mensaje:element.body==""?"Contenido Multimedia":element.body,NumeroCliente:element.clientNumber,status:element.status=="1"?"leido":"No Leido" ,Fecha_Enviado:element.createdAt.toLocaleString("es-CO", { timeZone: "America/Bogota" }),asesora:element.User.name,Comentario:element.comment?element.comment.name:"No Registrado",Numero_Asesor:element.User.phoneNumber});
   });
   if(dataSend.length>0){ 
     let workbook = Excel.utils.book_new();
@@ -398,7 +407,7 @@ const Downoload=async(req,res,next)=>{
     let month = date.getMonth();
     let year = date.getFullYear();
 
-    let url = "../../files/ReporteMensajes" + "_" + day + "-" + month + "-" + year + ".xlsx";
+    let url = "./files/ReporteMensajes" + "_" + day + "-" + month + "-" + year + ".xlsx";
 
     let workbookAbout = Excel.writeFile(workbook, url , { bookType: 'xlsx', type: 'binary' });
     
