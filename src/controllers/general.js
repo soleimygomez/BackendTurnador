@@ -79,7 +79,8 @@ const createComment=async(req,res,next)=>{
   });
 
 
- client.on('message', async msg => {
+ 
+  client.on('message', async msg => {
     const { from, body, hasMedia } = msg; 
     if (from === 'status@broadcast' ) {
       return
@@ -89,16 +90,20 @@ const createComment=async(req,res,next)=>{
     message = body.toLowerCase();
     messageWhatssap = [];
     
-   let manana= moment().add(0,'days');
+   let manana= moment().add(0,'days'); 
     let search = await dbSequelize.message.findOne({ where: { clientNumber: objectMessage.from } });
-    let resta =manana.diff(search?search.createdAt:0);
-    // if (search && objectMessage.body!="" && resta>=180000000) {
-    //   let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
-    //   let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
-    //   let dataSend = { body: objectMessage.hasMedia?"El Cliente a enviado contenido multimedia":objectMessage.body, clientNumber: objectMessage.from, idUser: Users[0].idUser, status: 0 }
-    //   await dbSequelize.message.create(dataSend);
-    // }
-    // else { 
+   
+    if (search && objectMessage.body!=""   || objectMessage.hasMedia) {
+      let resta =manana.diff(search.createdAt);   
+      let days = (resta / (1000 * 60 * 60 * 24)).toFixed(1)
+      if(days>=1)  { 
+      let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
+      let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
+      let dataSend = { body: objectMessage.hasMedia?"El Cliente a enviado contenido multimedia":objectMessage.body, clientNumber: objectMessage.from, idUser: Users[0].idUser, status: 0 }
+      await dbSequelize.message.create(dataSend);
+      }
+    }
+    else { 
     if(!search){ 
       if(objectMessage.body!="" || objectMessage.hasMedia){
         var hoy = new Date();
@@ -140,10 +145,12 @@ const createComment=async(req,res,next)=>{
       }
        
     })
-   }
+    }
+    }
   }
   
   });
+  
   
 
 
