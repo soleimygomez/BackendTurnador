@@ -125,17 +125,20 @@ const createComment=async(req,res,next)=>{
           } 
       
         } 
-    // }
-   objectMessage=[];
+    objectMessage=[];
+     
+    }
+    }
+
     const allChats = await client.getChats();
     const lastFiftyChats = allChats.splice(0,2);
     
     lastFiftyChats.forEach(async(element)=>{
        // console.log(element.isGroup,typeof(element.isGroup));
+      const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
       if(!element.isGroup && !from.includes('@g')){
          //let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
-         const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
-         if(!status){
+          if(!status){
               let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
               let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
               let dataSend = { body: "Vi esto en Facebook....", clientNumber: `${element.id.user}@c.us`, idUser: Users[0].idUser, status: 0 }
@@ -145,8 +148,6 @@ const createComment=async(req,res,next)=>{
       }
        
     })
-    }
-    }
   }
   
   });
