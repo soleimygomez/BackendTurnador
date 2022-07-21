@@ -129,25 +129,8 @@ const createComment=async(req,res,next)=>{
      
     }
     }
-
-    const allChats = await client.getChats();
-    const lastFiftyChats = allChats.splice(0,2);
+    await allchat();
     
-    lastFiftyChats.forEach(async(element)=>{
-       // console.log(element.isGroup,typeof(element.isGroup));
-      const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
-      if(!element.isGroup && !from.includes('@g')){
-         //let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
-          if(!status){
-              let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
-              let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
-              let dataSend = { body: "Vi esto en Facebook....", clientNumber: `${element.id.user}@c.us`, idUser: Users[0].idUser, status: 0 }
-              await dbSequelize.message.create(dataSend)
-         }
-        
-      }
-       
-    })
   }
   
   });
@@ -174,6 +157,33 @@ const createComment=async(req,res,next)=>{
   client.initialize(); 
   
 };
+const allchat=async()=>{
+  try{
+  const allChats = await client.getChats();
+    const lastFiftyChats = allChats.splice(0,10);
+    
+    lastFiftyChats.forEach(async(element)=>{
+       // console.log(element.isGroup,typeof(element.isGroup));
+      const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
+      if(!element.isGroup && !from.includes('@g')){
+         //let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
+          if(!status){
+              let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
+              let userAsign = await dbSequelize.user.update({ count: Users[0].count + 1 }, { where: { idUser: Users[0].idUser, } });
+              let dataSend = { body: "Vi esto en Facebook....", clientNumber: `${element.id.user}@c.us`, idUser: Users[0].idUser, status: 0 }
+              await dbSequelize.message.create(dataSend)
+         }
+        
+      }
+       
+    })
+  }catch (e) {
+    console.log('Error', e);
+    res.status(500).json({
+      message: 'Por favor, valida los datos ingresados e intenta nuevamente.',
+    });
+  }
+}
 const createUser = async (req, res, next) => {
   //Validate input
   const errors = validationResult(req); 
