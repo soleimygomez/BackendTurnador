@@ -165,7 +165,7 @@ const allchat=async()=>{
     lastFiftyChats.forEach(async(element)=>{
        // console.log(element.isGroup,typeof(element.isGroup));
       const status=await dbSequelize.message.findOne({ where: { clientNumber: `${element.id.user}@c.us` } });
-      if(!element.isGroup && !from.includes('@g')){
+      if(!element.isGroup){
          //let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
           if(!status){
               let Users = await dbSequelize.user.findAll({ where: { Role_idRole: 2 }, order: [['count', 'ASC']] });
