@@ -199,7 +199,12 @@ const EdithMessageStatus=async(req)=>{
     return { status: 500, message: "Error interno del servidor." }}
 };
 const AllMessage=async()=>{
-  try {
+  try { 
+    const repetidos=await dbSequelize.message.findAll({attributes:["clientNumber","createdAt"],group: "clientNumber",limit : 20,having: Sequelize.literal('count(clientNumber)>1')});
+    repetidos.forEach(async (element)=>{
+      const result= await dbSequelize.message.findAll({  where: { clientNumber: element.clientNumber }, order: [['idMessage', 'DESC']]  });
+      await eliminarRepetid(result); 
+    })
     const Message= await dbSequelize.message.findAll({ include: [ { model: dbSequelize.user,required:true },{ model: dbSequelize.comment } ],order: [['idMessage', 'DESC']]  });
     return { status: 200, data: Message };
   } catch (e) {
@@ -208,6 +213,20 @@ const AllMessage=async()=>{
     return { status: 500, data: [], message: "Error interno del servidor." };
   }
 };
+const eliminarRepetid=async(consulta)=>{
+  try{ 
+    if(consulta[0].createdAt.toISOString().split('T')[0]==consulta[1].createdAt.toISOString().split('T')[0]){
+      await  dbSequelize.message.destroy({  where: { idMessage : consulta[0].idMessage, } });
+    }
+  }
+  catch (e) {
+    console.log(e);
+    //throw e;
+    return { status: 500, data: [], message: "Error interno del servidor." };
+  }
+   
+
+}
 const AllMessageUser=async(req)=>{
   try {
     const {iduser}=req.headers;
