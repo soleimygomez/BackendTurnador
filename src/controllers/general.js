@@ -157,7 +157,7 @@ const createComment=async(req,res,next)=>{
   client.initialize(); 
   
 };
-const allchat=async()=>{
+const allchat=async(req, res, next)=>{
   try{
   const allChats = await client.getChats();
     const lastFiftyChats = allChats.splice(0,10);
