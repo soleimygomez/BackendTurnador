@@ -200,7 +200,7 @@ const EdithMessageStatus=async(req)=>{
 };
 const AllMessage=async()=>{
   try { 
-    const repetidos=await dbSequelize.message.findAll({attributes:["clientNumber","createdAt"],group: "clientNumber",limit : 20,having: Sequelize.literal('count(clientNumber)>1')});
+    const repetidos=await dbSequelize.message.findAll({attributes:["clientNumber","createdAt"],group: "clientNumber",limit : 20,having: Sequelize.literal('count(clientNumber)>1'),order: [['idMessage', 'DESC']] });
     repetidos.forEach(async (element)=>{
       const result= await dbSequelize.message.findAll({  where: { clientNumber: element.clientNumber }, order: [['idMessage', 'DESC']]  });
       await eliminarRepetid(result); 
