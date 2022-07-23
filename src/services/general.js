@@ -230,6 +230,11 @@ const eliminarRepetid=async(consulta)=>{
 const AllMessageUser=async(req)=>{
   try {
     const {iduser}=req.headers;
+    const repetidos=await dbSequelize.message.findAll({attributes:["clientNumber","createdAt"],group: "clientNumber",limit : 10,having: Sequelize.literal('count(clientNumber)>1'),order: [['idMessage', 'DESC']] });
+    repetidos.forEach(async (element)=>{
+      const result= await dbSequelize.message.findAll({  where: { clientNumber: element.clientNumber }, order: [['idMessage', 'DESC']]  });
+      await eliminarRepetid(result); 
+    })
     const Message= await dbSequelize.message.findAll({where:{idUser:iduser}, include: [ { model: dbSequelize.user,required:true },{ model: dbSequelize.comment } ],order: [['idMessage', 'DESC']]  });
     return { status: 200, data: Message };
   } catch (e) {
